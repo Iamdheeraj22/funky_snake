@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:google_fonts/google_fonts.dart';
+
 import '../../logic/game_cubit.dart';
 import '../../logic/game_state.dart';
 import '../widgets/game_board.dart';
@@ -49,7 +50,17 @@ class GameView extends StatelessWidget {
                 cubit.changeDirection(SnakeDirection.right);
                 return KeyEventResult.handled;
               case LogicalKeyboardKey.space:
-                cubit.pauseGame();
+                final state = cubit.state;
+                if (state.status == GameStatus.paused) {
+                  cubit.resumeGame();
+                }
+                if (state.status == GameStatus.running) {
+                  cubit.pauseGame();
+                }
+                if (state.status == GameStatus.gameOver ||
+                    state.status == GameStatus.idle) {
+                  cubit.startGame();
+                }
                 return KeyEventResult.handled;
             }
           }
@@ -67,7 +78,8 @@ class GameView extends StatelessWidget {
                     child: Center(
                       child: LayoutBuilder(
                         builder: (context, innerConstraints) {
-                          final size = innerConstraints.biggest.shortestSide * 0.9;
+                          final size =
+                              innerConstraints.biggest.shortestSide * 0.9;
                           return SizedBox(
                             width: size,
                             height: size,
@@ -86,10 +98,25 @@ class GameView extends StatelessWidget {
                                     GameOverlay(
                                       status: state.status,
                                       difficulty: state.difficulty,
-                                      onDifficultyChanged: (d) =>
-                                          context.read<GameCubit>().setDifficulty(d),
+                                      onDifficultyChanged: (d) => context
+                                          .read<GameCubit>()
+                                          .setDifficulty(d),
                                       score: state.score,
-                                      onStart: () => context.read<GameCubit>().startGame(),
+                                      onStart: () {
+                                        final cubit = context.read<GameCubit>();
+                                        if (state.status == GameStatus.paused) {
+                                          cubit.resumeGame();
+                                        }
+                                        if (state.status ==
+                                            GameStatus.running) {
+                                          cubit.pauseGame();
+                                        }
+                                        if (state.status ==
+                                                GameStatus.gameOver ||
+                                            state.status == GameStatus.idle) {
+                                          cubit.startGame();
+                                        }
+                                      },
                                     ),
                                   ],
                                 );
@@ -147,10 +174,7 @@ class _ScoreItem extends StatelessWidget {
       children: [
         Text(
           label,
-          style: GoogleFonts.pressStart2p(
-            fontSize: 12,
-            color: Colors.white60,
-          ),
+          style: GoogleFonts.pressStart2p(fontSize: 12, color: Colors.white60),
         ),
         const SizedBox(height: 8),
         Text(
@@ -192,67 +216,74 @@ class _DirectionalControls extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return BlocBuilder<GameCubit, SnakeGameState>(
-  builder: (context, state) {
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 20.0),
-      child: Column(
-        children: [
-          Row(
-            mainAxisAlignment: MainAxisAlignment.center,
+      builder: (context, state) {
+        return Padding(
+          padding: const EdgeInsets.only(bottom: 20.0),
+          child: Column(
             children: [
-              _ControlButton(
-                icon: Icons.keyboard_arrow_up,
-                onPressed: () =>
-                    context.read<GameCubit>().changeDirection(SnakeDirection.up),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  _ControlButton(
+                    icon: Icons.keyboard_arrow_up,
+                    onPressed: () => context.read<GameCubit>().changeDirection(
+                      SnakeDirection.up,
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 10),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  _ControlButton(
+                    icon: Icons.keyboard_arrow_left,
+                    onPressed: () => context.read<GameCubit>().changeDirection(
+                      SnakeDirection.left,
+                    ),
+                  ),
+                  const SizedBox(width: 20),
+                  _ControlButton(
+                    icon: (state.status == GameStatus.running)
+                        ? Icons.pause
+                        : Icons.play_arrow,
+                    onPressed: () {
+                      if (state.status == GameStatus.running) {
+                        context.read<GameCubit>().pauseGame();
+                      } else if (state.status == GameStatus.gameOver ||
+                          state.status == GameStatus.idle) {
+                        context.read<GameCubit>().startGame();
+                      } else if (state.status == GameStatus.paused) {
+                        context.read<GameCubit>().resumeGame();
+                      }
+                    },
+                  ),
+                  const SizedBox(width: 20),
+                  _ControlButton(
+                    icon: Icons.keyboard_arrow_right,
+                    onPressed: () => context.read<GameCubit>().changeDirection(
+                      SnakeDirection.right,
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 10),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  _ControlButton(
+                    icon: Icons.keyboard_arrow_down,
+                    onPressed: () => context.read<GameCubit>().changeDirection(
+                      SnakeDirection.down,
+                    ),
+                  ),
+                ],
               ),
             ],
           ),
-          const SizedBox(height: 10),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              _ControlButton(
-                icon: Icons.keyboard_arrow_left,
-                onPressed: () =>
-                    context.read<GameCubit>().changeDirection(SnakeDirection.left),
-              ),
-              const SizedBox(width: 20),
-              _ControlButton(
-                icon: (state.status==GameStatus.running)?Icons.pause:Icons.play_arrow,
-                onPressed: () {
-                  if(state.status==GameStatus.running){
-                    context.read<GameCubit>().pauseGame();
-                  } if(state.status==GameStatus.gameOver||state.status==GameStatus.idle){
-                    context.read<GameCubit>().startGame();
-                  }if(state.status==GameStatus.paused){
-                    context.read<GameCubit>().startGame();
-                  }
-                } ,
-              ),
-              const SizedBox(width: 20),
-              _ControlButton(
-                icon: Icons.keyboard_arrow_right,
-                onPressed: () =>
-                    context.read<GameCubit>().changeDirection(SnakeDirection.right),
-              ),
-            ],
-          ),
-          const SizedBox(height: 10),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              _ControlButton(
-                icon: Icons.keyboard_arrow_down,
-                onPressed: () =>
-                    context.read<GameCubit>().changeDirection(SnakeDirection.down),
-              ),
-            ],
-          ),
-        ],
-      ),
+        );
+      },
     );
-  },
-);
   }
 }
 
@@ -260,10 +291,7 @@ class _ControlButton extends StatelessWidget {
   final IconData icon;
   final VoidCallback onPressed;
 
-  const _ControlButton({
-    required this.icon,
-    required this.onPressed,
-  });
+  const _ControlButton({required this.icon, required this.onPressed});
 
   @override
   Widget build(BuildContext context) {
@@ -277,16 +305,9 @@ class _ControlButton extends StatelessWidget {
           padding: const EdgeInsets.all(12),
           decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(12),
-            border: Border.all(
-              color: Colors.white.withOpacity(0.1),
-              width: 1,
-            ),
+            border: Border.all(color: Colors.white.withOpacity(0.1), width: 1),
           ),
-          child: Icon(
-            icon,
-            color: Colors.white70,
-            size: 32,
-          ),
+          child: Icon(icon, color: Colors.white70, size: 32),
         ),
       ),
     );

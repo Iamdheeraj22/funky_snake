@@ -58,13 +58,18 @@ class GameCubit extends Cubit<SnakeGameState> {
       _boomTimer?.cancel();
       emit(state.copyWith(status: GameStatus.paused));
     } else if (state.status == GameStatus.paused) {
-      emit(state.copyWith(status: GameStatus.running));
-      _startTicker();
-      // If boom was visible, we'd need to resume its timer, but for simplicity we'll just skip it or restart it.
-      // Re-triggering boom life cycle if it was active
-      if (state.isBoomVisible) {
-        _startBoomExpiry();
-      }
+      resumeGame();
+    }
+  }
+
+  void resumeGame() {
+    if (state.status != GameStatus.paused) return;
+
+    emit(state.copyWith(status: GameStatus.running));
+    _startTicker();
+    // Re-trigger boom life cycle if it was active
+    if (state.isBoomVisible) {
+      _startBoomExpiry();
     }
   }
 
