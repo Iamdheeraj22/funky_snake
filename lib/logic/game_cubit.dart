@@ -1,8 +1,10 @@
 import 'dart:async';
 import 'dart:math';
+
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'game_state.dart';
+
 import '../models/grid_point.dart';
+import 'game_state.dart';
 
 class GameCubit extends Cubit<SnakeGameState> {
   static const int gridSize = 20;
@@ -77,10 +79,14 @@ class GameCubit extends Cubit<SnakeGameState> {
     if (state.status != GameStatus.running) return;
 
     final bool isOpposite =
-        (state.direction == SnakeDirection.up && newDirection == SnakeDirection.down) ||
-            (state.direction == SnakeDirection.down && newDirection == SnakeDirection.up) ||
-            (state.direction == SnakeDirection.left && newDirection == SnakeDirection.right) ||
-            (state.direction == SnakeDirection.right && newDirection == SnakeDirection.left);
+        (state.direction == SnakeDirection.up &&
+            newDirection == SnakeDirection.down) ||
+        (state.direction == SnakeDirection.down &&
+            newDirection == SnakeDirection.up) ||
+        (state.direction == SnakeDirection.left &&
+            newDirection == SnakeDirection.right) ||
+        (state.direction == SnakeDirection.right &&
+            newDirection == SnakeDirection.left);
 
     if (!isOpposite) {
       emit(state.copyWith(direction: newDirection));
@@ -110,7 +116,10 @@ class GameCubit extends Cubit<SnakeGameState> {
     }
 
     // Check Wall Collision
-    if (newHead.x < 0 || newHead.x >= gridSize || newHead.y < 0 || newHead.y >= gridSize) {
+    if (newHead.x < 0 ||
+        newHead.x >= gridSize ||
+        newHead.y < 0 ||
+        newHead.y >= gridSize) {
       _gameOver();
       return;
     }
@@ -131,12 +140,14 @@ class GameCubit extends Cubit<SnakeGameState> {
 
     // Check Fruit Collision
     if (!state.isBoomVisible && newHead == state.food) {
-      final newScore = state.score + 10;
-      emit(state.copyWith(
-        snake: newSnake,
-        score: newScore,
-        highScore: max(newScore, state.highScore),
-      ));
+      final newScore = state.score + addScoreAccordingToDifficulty();
+      emit(
+        state.copyWith(
+          snake: newSnake,
+          score: newScore,
+          highScore: max(newScore, state.highScore),
+        ),
+      );
       _spawnFruit();
 
       // Randomly trigger a boom after eating
@@ -149,24 +160,32 @@ class GameCubit extends Cubit<SnakeGameState> {
     }
   }
 
+  int addScoreAccordingToDifficulty() {
+    if (state.difficulty == GameDifficulty.easy) {
+      return 10;
+    }
+    if (state.difficulty == GameDifficulty.medium) {
+      return 25;
+    }
+    if (state.difficulty == GameDifficulty.hard) {
+      return 40;
+    }
+    return 50;
+  }
+
   void _spawnFruit() {
     final food = _generateRandomPoint();
     final fruitType = _fruits[Random().nextInt(_fruits.length)];
-    emit(state.copyWith(
-      food: food,
-      fruitType: fruitType,
-      isBoomVisible: false,
-    ));
+    emit(
+      state.copyWith(food: food, fruitType: fruitType, isBoomVisible: false),
+    );
   }
 
   void _triggerBoom() {
     if (state.isBoomVisible) return;
 
     final boomPos = _generateRandomPoint();
-    emit(state.copyWith(
-      boomPosition: boomPos,
-      isBoomVisible: true,
-    ));
+    emit(state.copyWith(boomPosition: boomPos, isBoomVisible: true));
 
     _startBoomExpiry();
   }
