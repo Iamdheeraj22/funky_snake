@@ -1,4 +1,5 @@
 import 'package:equatable/equatable.dart';
+
 import '../../models/grid_point.dart';
 
 enum GameStatus { idle, running, paused, gameOver }
@@ -11,6 +12,7 @@ class SnakeGameState extends Equatable {
   final List<GridPoint> snake;
   final GridPoint food;
   final String fruitType;
+  final Map<String, dynamic> fruitDetails;
   final GridPoint? boomPosition;
   final bool isBoomVisible;
   final SnakeDirection direction;
@@ -23,6 +25,7 @@ class SnakeGameState extends Equatable {
     required this.snake,
     required this.food,
     required this.fruitType,
+    this.fruitDetails = const {},
     this.boomPosition,
     this.isBoomVisible = false,
     required this.direction,
@@ -37,6 +40,7 @@ class SnakeGameState extends Equatable {
       snake: [GridPoint(10, 10), GridPoint(10, 11), GridPoint(10, 12)],
       food: GridPoint(5, 5),
       fruitType: '🍎',
+      fruitDetails: {"fruit": "🍎", "weight": 20},
       direction: SnakeDirection.up,
       status: GameStatus.idle,
       difficulty: GameDifficulty.easy,
@@ -49,6 +53,7 @@ class SnakeGameState extends Equatable {
     List<GridPoint>? snake,
     GridPoint? food,
     String? fruitType,
+    Map<String, dynamic>? fruitDetails,
     GridPoint? boomPosition,
     bool? isBoomVisible,
     SnakeDirection? direction,
@@ -60,6 +65,7 @@ class SnakeGameState extends Equatable {
     return SnakeGameState(
       snake: snake ?? this.snake,
       food: food ?? this.food,
+      fruitDetails: fruitDetails ?? this.fruitDetails,
       fruitType: fruitType ?? this.fruitType,
       boomPosition: boomPosition ?? this.boomPosition,
       isBoomVisible: isBoomVisible ?? this.isBoomVisible,
@@ -73,15 +79,16 @@ class SnakeGameState extends Equatable {
 
   @override
   List<Object?> get props => [
-        snake,
-        food,
-        fruitType,
-        boomPosition,
-        isBoomVisible,
-        direction,
-        status,
-        difficulty,
-        score,
-        highScore
-      ];
+    snake,
+    food,
+    fruitType,
+    fruitDetails,
+    boomPosition,
+    isBoomVisible,
+    direction,
+    status,
+    difficulty,
+    score,
+    highScore,
+  ];
 }

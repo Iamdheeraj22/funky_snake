@@ -10,7 +10,15 @@ class GameCubit extends Cubit<SnakeGameState> {
   static const int gridSize = 20;
   Timer? _gameTimer;
   Timer? _boomTimer;
-  final List<String> _fruits = ['🍎', '🍌', '🍓', '🍇', '🍍', '🍊', '🥝'];
+  final List<Map<String, dynamic>> _fruitsWithWeight = [
+    {"fruit": "🍎", "weight": 20},
+    {"fruit": "🍌", "weight": 15},
+    {"fruit": "🍓", "weight": 10},
+    {"fruit": "🍇", "weight": 15},
+    {"fruit": "🍍", "weight": 30},
+    {"fruit": "🍊", "weight": 25},
+    {"fruit": "🥝", "weight": 30},
+  ];
 
   GameCubit() : super(SnakeGameState.initial());
 
@@ -162,22 +170,40 @@ class GameCubit extends Cubit<SnakeGameState> {
 
   int addScoreAccordingToDifficulty() {
     if (state.difficulty == GameDifficulty.easy) {
-      return 10;
+      if (state.score < 10) {
+        return 10;
+      }
+      return (state.score * 0.04).toInt() +
+          (state.fruitDetails["weight"] as int);
     }
     if (state.difficulty == GameDifficulty.medium) {
-      return 25;
+      if (state.score < 25) {
+        return 15;
+      }
+      return (state.score * 0.06).toInt() +
+          (state.fruitDetails["weight"] as int);
     }
     if (state.difficulty == GameDifficulty.hard) {
-      return 40;
+      if (state.score < 50) {
+        return 20;
+      }
+      return (state.score * 0.08).toInt() +
+          (state.fruitDetails["weight"] as int);
     }
     return 50;
   }
 
   void _spawnFruit() {
     final food = _generateRandomPoint();
-    final fruitType = _fruits[Random().nextInt(_fruits.length)];
+    final fruitType =
+        _fruitsWithWeight[Random().nextInt(_fruitsWithWeight.length)];
     emit(
-      state.copyWith(food: food, fruitType: fruitType, isBoomVisible: false),
+      state.copyWith(
+        food: food,
+        fruitDetails: fruitType,
+        fruitType: fruitType["fruit"],
+        isBoomVisible: false,
+      ),
     );
   }
 
