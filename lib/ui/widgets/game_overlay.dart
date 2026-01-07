@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+
 import '../../logic/game_state.dart';
 
 class GameOverlay extends StatelessWidget {
@@ -83,7 +84,10 @@ class GameOverlay extends StatelessWidget {
               onPressed: onStart,
               style: ElevatedButton.styleFrom(
                 backgroundColor: Colors.greenAccent[700],
-                padding: const EdgeInsets.symmetric(horizontal: 40, vertical: 20),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 40,
+                  vertical: 20,
+                ),
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(30),
                 ),
@@ -115,10 +119,7 @@ class _DifficultySelection extends StatelessWidget {
       children: [
         Text(
           'SELECT DIFFICULTY',
-          style: GoogleFonts.pressStart2p(
-            fontSize: 10,
-            color: Colors.white70,
-          ),
+          style: GoogleFonts.pressStart2p(fontSize: 10, color: Colors.white70),
         ),
         const SizedBox(height: 15),
         Row(
@@ -126,19 +127,36 @@ class _DifficultySelection extends StatelessWidget {
           children: GameDifficulty.values.map((d) {
             final isSelected = d == selected;
             return Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 8.0),
-              child: ChoiceChip(
-                label: Text(
-                  d.name.toUpperCase(),
-                  style: GoogleFonts.pressStart2p(
-                    fontSize: 8,
-                    color: isSelected ? Colors.black : Colors.white,
+              padding: const EdgeInsets.only(right: 8.0),
+              child: InkWell(
+                onTap: () {
+                  onChanged(d);
+                },
+                child: Container(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 16.0,
+                    vertical: 8.0,
+                  ),
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(6),
+                    color: isSelected ? Colors.greenAccent : Colors.white10,
+                  ),
+                  child: Row(
+                    children: [
+                      if (isSelected) ...[
+                        Icon(Icons.done, size: 15),
+                        SizedBox(width: 10),
+                      ],
+                      Text(
+                        d.name.toUpperCase(),
+                        style: GoogleFonts.pressStart2p(
+                          fontSize: 8,
+                          color: isSelected ? Colors.black : Colors.white,
+                        ),
+                      ),
+                    ],
                   ),
                 ),
-                selected: isSelected,
-                selectedColor: Colors.greenAccent,
-                backgroundColor: Colors.white10,
-                onSelected: (_) => onChanged(d),
               ),
             );
           }).toList(),
