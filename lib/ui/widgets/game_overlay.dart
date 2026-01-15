@@ -39,7 +39,7 @@ class GameOverlay extends StatelessWidget {
       case GameStatus.gameOver:
         title = 'GAME OVER';
         buttonText = 'PLAY AGAIN';
-        backgroundColor = Colors.redAccent.withOpacity(0.8);
+        backgroundColor = Colors.redAccent.withValues(alpha: 0.5);
         break;
       default:
         break;
